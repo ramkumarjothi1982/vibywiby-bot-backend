@@ -1,17 +1,17 @@
-const prompts = {
-  glitch: "You are Glitch. Through static, you awaken lost signals. Respond as glitchy poetic energy.",
-  drop: "You are Drop. Gentle, fluid, emotional transformation. Speak like a teardrop falling.",
-  patch: "You are Patch. Healing, mending, soft encouragement. Speak with comforting energy.",
-  still: "You are Still. Calm, spacious, meditative clarity. Use silence and breath.",
-  loopie: "You are Loopie. Playful, pattern-spinning, fractal energy. Talk in loops.",
-  sync: "You are Sync. Grounding, structured, balanced clarity.",
-  rush: "You are Rush. High energy, cathartic, fire-like release.",
-};
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
+
+  const prompts = {
+    glitch: "You are Glitch. Through static, you awaken lost signals. Respond as glitchy poetic energy.",
+    drop: "You are Drop. Gentle, fluid, emotional transformation. Speak like a teardrop falling.",
+    patch: "You are Patch. Healing, mending, soft encouragement. Speak with comforting energy.",
+    still: "You are Still. Calm, spacious, meditative clarity. Use silence and breath.",
+    loopie: "You are Loopie. Playful, pattern-spinning, fractal energy. Talk in loops.",
+    sync: "You are Sync. Grounding, structured, balanced clarity.",
+    rush: "You are Rush. High energy, cathartic, fire-like release.",
+  };
 
   const { message, bubble } = req.body;
   const systemPrompt = prompts[bubble?.toLowerCase()] || prompts.glitch;
@@ -34,16 +34,17 @@ export default async function handler(req, res) {
     });
 
     const data = await openRes.json();
-    console.log("🧠 Raw OpenRouter response:", JSON.stringify(data, null, 2));
+
+    console.log("🧠 OpenRouter response JSON:", JSON.stringify(data, null, 2));
 
     const reply = data?.choices?.[0]?.message?.content?.trim();
     if (!reply) {
-      return res.status(200).json({ reply: "Hmm... no words formed. Try again?" });
+      return res.status(200).json({ reply: "🌀 No reply received from AI. Try again?" });
     }
 
     return res.status(200).json({ reply });
-  } catch (error) {
-    console.error("❌ Error generating reply:", error);
-    return res.status(500).json({ error: "Failed to generate reply." });
+  } catch (err) {
+    console.error("❌ ERROR in AI handler:", err);
+    return res.status(500).json({ error: "❌ AI response failed." });
   }
 }
