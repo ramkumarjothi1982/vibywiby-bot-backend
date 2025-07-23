@@ -23,11 +23,16 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // 🛠 Fix: safely access nested content
-    const reply = data?.choices?.[0]?.message?.content?.trim() || "✨ Unable to generate a reply.";
+    // 🛠 Safe fallback parser
+    let reply = "✨ Unable to generate a reply.";
+    if (Array.isArray(data.choices) && data.choices[0]?.message?.content) {
+      reply = data.choices[0].message.content.trim();
+    } else if (typeof data === "object") {
+      console.log("🧠 DEBUG OpenRouter data:", data);
+    }
 
     res.status(200).json({ success: true, reply });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message || "Internal error" });
+    res.status(500).json({ success: false, error: error.message || "Internal Server Error" });
   }
 }
