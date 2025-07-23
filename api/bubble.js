@@ -14,18 +14,13 @@ export default async function handler(req, res) {
   }
 
   const { message, bubble } = req.body;
-
-  if (!message || !bubble) {
-    return res.status(400).json({ error: "Missing message or bubble in request body." });
-  }
-
-  const systemPrompt = prompts[bubble.toLowerCase()] || prompts.glitch;
+  const systemPrompt = prompts[bubble?.toLowerCase()] || prompts.glitch;
 
   try {
     const openRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        Authorization: req.headers.authorization || `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -39,11 +34,9 @@ export default async function handler(req, res) {
     });
 
     const data = await openRes.json();
-    console.log("📦 OpenRouter response:", JSON.stringify(data));
-
-    const reply = data?.choices?.[0]?.message?.content?.trim() || "❌ No response from model";
-
+    const reply = data?.choices?.[0]?.message?.content?.trim();
     return res.status(200).json({ reply });
+
   } catch (error) {
     console.error("❌ Error generating reply:", error);
     return res.status(500).json({ error: "Failed to generate reply." });
