@@ -36,8 +36,10 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    const reply = data?.choices?.[0]?.message?.content;
-    return res.status(200).json({ reply });
+const reply = data.choices?.[0]?.message?.content;
+
+return res.status(200).json({ success: true, reply });
+
   } catch (error) {
     return res.status(500).json({ error: "Failed to generate reply", details: error.message });
   }
