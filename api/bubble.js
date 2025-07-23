@@ -34,12 +34,12 @@ export default async function handler(req, res) {
     });
 
     const data = await openRes.json();
-    console.log("🧠 OpenRouter raw response:", data);
+    console.log("📦 Full response from OpenRouter:", JSON.stringify(data, null, 2));
 
     const reply = data?.choices?.[0]?.message?.content?.trim();
     console.log("💬 Extracted reply:", reply);
 
-    return res.status(200).json({ reply: reply || "Hmm... no words formed. Try again?" });
+    return res.status(200).json({ reply: reply || "🌀 No reply received from AI. Try again?" });
   } catch (error) {
     console.error("❌ Error generating reply:", error);
     return res.status(500).json({ error: "Failed to generate reply." });
