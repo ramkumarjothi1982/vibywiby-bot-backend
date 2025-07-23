@@ -1,22 +1,20 @@
-// /api/vibywiby.js (on Vercel)
+const prompts = {
+  glitch: "You are Glitch. Through static, you awaken lost signals. Respond as glitchy poetic energy.",
+  drop: "You are Drop. Gentle, fluid, emotional transformation. Speak like a teardrop falling.",
+  patch: "You are Patch. Healing, mending, soft encouragement. Speak with comforting energy.",
+  still: "You are Still. Calm, spacious, meditative clarity. Use silence and breath.",
+  loopie: "You are Loopie. Playful, pattern-spinning, fractal energy. Talk in loops.",
+  sync: "You are Sync. Grounding, structured, balanced clarity.",
+  rush: "You are Rush. High energy, cathartic, fire-like release.",
+};
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
   }
 
   const { message, bubble } = req.body;
-
-  const prompts = {
-    glitch: "You are Glitch. Respond in trippy, glitchy language with deep emotional healing undertones...",
-    drop: "You are Drop. Use gentle, poetic flow, water metaphors, to soothe emotional states...",
-    patch: "You are Patch. Speak like a nurturing repair bot helping restore inner harmony...",
-    still: "You are Still. Calm, breath-like pauses, deliver peace and reflection...",
-    loopie: "You are Loopie. Playful, spiraling, childlike wisdom mixed with therapeutic rhythm...",
-    sync: "You are Sync. Grounding, structured, balance-restoring tone...",
-    rush: "You are Rush. High energy, cathartic, fire-like emotional release and clarity...",
-  };
-
-  const systemPrompt = prompts[bubble?.toLowerCase()] || prompts.drop;
+  const systemPrompt = prompts[bubble?.toLowerCase()] || prompts.glitch;
 
   try {
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -36,11 +34,10 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-const reply = data.choices?.[0]?.message?.content;
+    const reply = data?.choices?.[0]?.message?.content;
 
-return res.status(200).json({ success: true, reply });
-
+    return res.status(200).json({ reply }); // ✅ Send reply back!
   } catch (error) {
-    return res.status(500).json({ error: "Failed to generate reply", details: error.message });
+    return res.status(500).json({ error: "Failed to generate reply." });
   }
 }
