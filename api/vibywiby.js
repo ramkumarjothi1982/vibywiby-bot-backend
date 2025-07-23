@@ -1,38 +1,42 @@
 export default async function handler(req, res) {
-  const { openrouter, system_prompt, user_message } = req.body || {};
+  if (req.method !== "POST") {
+    return res.status(405).json({ success: false, error: "Method Not Allowed" });
+  }
 
-  if (!openrouter || !user_message || !system_prompt) {
+  const { openrouter, system_prompt, user_message } = req.body;
+
+  if (!openrouter || !system_prompt || !user_message) {
     return res.status(400).json({ success: false, error: "Missing required fields" });
   }
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const openRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${openrouter}`,
         "Content-Type": "application/json",
+        Authorization: `Bearer ${openrouter}`,
       },
       body: JSON.stringify({
-        model: "mistral/mixtral-8x7b-instruct",
+        model: "mistralai/mistral-7b-instruct",
         messages: [
           { role: "system", content: system_prompt },
           { role: "user", content: user_message },
         ],
+        temperature: 0.8,
       }),
     });
 
-    const data = await response.json();
+    const openData = await openRes.json();
 
-    // 🛠 Safe fallback parser
-    let reply = "✨ Unable to generate a reply.";
-    if (Array.isArray(data.choices) && data.choices[0]?.message?.content) {
-      reply = data.choices[0].message.content.trim();
-    } else if (typeof data === "object") {
-      console.log("🧠 DEBUG OpenRouter data:", data);
+    if (!openData.choices || !openData.choices[0]?.message?.content) {
+      console.error("Invalid OpenRouter response:", openData);
+      return res.status(200).json({ success: true, reply: "✨ Unable to generate a reply." });
     }
 
-    res.status(200).json({ success: true, reply });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message || "Internal Server Error" });
+    const reply = openData.choices[0].message.content.trim();
+    return res.status(200).json({ success: true, reply });
+  } catch (err) {
+    console.error("Fetch failed:", err);
+    return res.status(500).json({ success: false, error: "Something went wrong with OpenRouter" });
   }
 }
