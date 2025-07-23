@@ -14,14 +14,19 @@ export default async function handler(req, res) {
   }
 
   const { message, bubble } = req.body;
+
+  if (!message || !bubble) {
+    return res.status(400).json({ error: "Missing 'message' or 'bubble'" });
+  }
+
   const systemPrompt = prompts[bubble?.toLowerCase()] || prompts.glitch;
 
   try {
-    const openRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const openrouterRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: req.headers.authorization || `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
+        "Authorization": req.headers.authorization || `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         model: "mistralai/mistral-7b-instruct",
@@ -33,12 +38,18 @@ export default async function handler(req, res) {
       }),
     });
 
-    const data = await openRes.json();
-    const reply = data?.choices?.[0]?.message?.content?.trim();
-    return res.status(200).json({ reply });
+    if (!openrouterRes.ok) {
+      const errorText = await openrouterRes.text();
+      console.error("OpenRouter Error:", errorText);
+      return res.status(openrouterRes.status).json({ error: "OpenRouter request failed" });
+    }
 
-  } catch (error) {
-    console.error("❌ Error generating reply:", error);
-    return res.status(500).json({ error: "Failed to generate reply." });
+    const data = await openrouterRes.json();
+    const reply = data?.choices?.[0]?.message?.content?.trim();
+
+    return res.status(200).json({ reply });
+  } catch (err) {
+    console.error("Server Error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 }
