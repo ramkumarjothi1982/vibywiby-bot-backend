@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   const systemPrompt = prompts[bubble?.toLowerCase()] || prompts.glitch;
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const openRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
@@ -33,11 +33,14 @@ export default async function handler(req, res) {
       }),
     });
 
-    const data = await response.json();
-    const reply = data?.choices?.[0]?.message?.content;
+    const data = await openRes.json();
+    const reply = data?.choices?.[0]?.message?.content?.trim();
 
-    return res.status(200).json({ reply }); // ✅ Send reply back!
+    // ✅ Send reply back to Postman
+    return res.status(200).json({ reply });
+
   } catch (error) {
+    console.error("❌ Error generating reply:", error);
     return res.status(500).json({ error: "Failed to generate reply." });
   }
 }
