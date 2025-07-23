@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   const systemPrompt = `You are ${bubble}. Respond with a short emotional ritual.`;
 
   const payload = {
-    model: "mistral-7b-instruct",
+    model: "mistralai/mistral-7b-instruct",
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: message }
